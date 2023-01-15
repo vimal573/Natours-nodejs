@@ -9,7 +9,10 @@ const DB = process.env.DATABASE_CONNECTION_STRING.replace(
 );
 
 mongoose
-  .connect(DB, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(DB, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(() => {
     console.log('DB connection successfull');
   });
