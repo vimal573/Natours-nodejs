@@ -16,7 +16,8 @@ exports.signUp = catchAsync(async (req, res, next) => {
     name,
     email,
     password,
-    confirmPassword
+    confirmPassword,
+    passwordChangedAt
   });
 
   const token = signToken(newUser.id);
@@ -52,4 +53,47 @@ exports.login = catchAsync(async (req, res, next) => {
     token,
     user
   });
+});
+
+exports.protect = catchAsync(async (req, res, next) => {
+  // Getting token and check if its there
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (!token) {
+    return next(
+      new AppError('You are not logged in, Please login to acces', 401)
+    );
+  }
+
+  // 2) Verification Token
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+  // 3) Check if user exists
+  const currentUser = await User.findById(decoded.id);
+
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
+
+  // 4) Check if user changed password after the token was issued
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
+    return next(
+      new AppError('User recently changed password! Please log in again.', 401)
+    );
+  }
+
+  req.user = currentUser;
+
+  next();
 });
