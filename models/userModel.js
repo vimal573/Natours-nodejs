@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -31,6 +33,19 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same!'
     }
   }
+});
+
+userSchema.pre('save', async function(next) {
+  // Only run this function if password was actually modified
+  if (!this.isModified('password')) return next();
+
+  //   hash the password using bcrypt
+  this.password = await bcrypt.hash(this.password, 10);
+
+  //   Delete confirm password field
+  this.confirmPassword = undefined;
+
+  next();
 });
 
 module.exports = mongoose.model('User', userSchema);
