@@ -13,6 +13,8 @@ const signToken = id => {
 };
 
 const createSendToken = (user, statusCode, res) => {
+  user.password = undefined;
+
   const token = signToken(user.id);
 
   res.status(statusCode).json({
@@ -48,8 +50,6 @@ exports.login = catchAsync(async (req, res, next) => {
   if (!user || !(await user.correctPassword(password))) {
     return next(new AppError('Incorrect email or password', 400));
   }
-
-  user.password = undefined;
 
   // 3) If everything ok, send token to client
   createSendToken(user, 200, res);
@@ -177,7 +177,6 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   // 3) Update cahngePasswordAt property for the user
 
   // 4) Log the user in, send JWT
-  user.password = undefined;
 
   createSendToken(user, 200, res);
 });
@@ -198,7 +197,6 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.confirmPassword = req.body.confirmPassword;
   await user.save();
 
-  user.password = undefined;
   // 4) Log user in send Jwt
   createSendToken(user, 200, res);
 });
