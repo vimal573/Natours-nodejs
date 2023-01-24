@@ -2,6 +2,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 
 const AppError = require('./utils/appError');
 const globelErrorHandler = require('./controller/errorController');
@@ -11,10 +12,15 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 // 1 GLOBAL Middleware
+//  Set security HTTP headers
+app.use(helmet());
+
+// Davlopment loggings
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
+// Limit requests from same ip
 const limiter = rateLimit({
   max: 100,
   windowMs: 60 * 60 * 1000,
@@ -22,16 +28,19 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-app.use(express.json());
+// Body parser, reading data from body into req.body
+app.use(
+  express.json({
+    limit: '10kb'
+  })
+);
+
+// Serving static files
 app.use(express.static(`${__dirname}/public`));
 
-app.use((req, res, next) => {
-  next();
-});
-
+// Test middleware
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
-
   next();
 });
 
