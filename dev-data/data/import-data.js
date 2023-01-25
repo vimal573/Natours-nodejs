@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../../.env' });
+require('dotenv').config({ path: './.env' });
 const fs = require('fs');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const mongoose = require('mongoose');
@@ -18,9 +18,7 @@ mongoose
     console.log('DB connection successfull');
   });
 
-const tours = JSON.parse(
-  fs.readFileSync(`${__dirname}/tours-simple.json`, 'utf-8')
-);
+const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'));
 
 const importData = async (req, res) => {
   try {
