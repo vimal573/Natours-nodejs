@@ -73,7 +73,10 @@ app.use((req, res, next) => {
 });
 
 app.use('/', (req, res, next) => {
-  res.status(200).render('base');
+  res.status(200).render('base', {
+    tour: 'The Forest Hiker',
+    user: 'vimal'
+  });
 });
 
 // 3 Routes
