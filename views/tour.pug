@@ -1,9 +1,9 @@
 extends base
 include _reviewCard
 
-block append head
-    link(rel='stylesheet' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css')
-    script(src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js')
+//- block append head
+//-     link(rel='stylesheet' href='https://unpkg.com/leaflet@1.6.0/dist/leaflet.css')
+//-     script(src='https://unpkg.com/leaflet@1.6.0/dist/leaflet.js')
 
 mixin overviewBox(label,text,icon)
     .overview-box__detail
@@ -66,8 +66,8 @@ block content
             .picture-box
                 img.picture-box__img(src=`/img/tours/${img}`, alt=`The Park Camper Tour ${i + 1}`, class=`picture-box__img--${i + 1}`)
 
-    section.section-map
-        #map(data-locations=`${JSON.stringify(tour.locations)}`)
+    //- section.section-map
+    //-     #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
     section.section-reviews
         .reviews

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable import/no-extraneous-dependencies */
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -38,37 +39,6 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-exports.signUp = catchAsync(async (req, res, next) => {
-  const { name, email, password, confirmPassword } = req.body;
-  const newUser = await User.create({
-    name,
-    email,
-    password,
-    confirmPassword
-  });
-
-  createSendToken(newUser, 201, res);
-});
-
-exports.login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  // 1) Check if email and password exist
-  if (!email || !password) {
-    return next(new AppError('Please provide email and password!', 400));
-  }
-
-  // 2) Check if use exists && password is correct
-  const user = await User.findOne({ email }).select('+password');
-
-  if (!user || !(await user.correctPassword(password))) {
-    return next(new AppError('Incorrect email or password', 400));
-  }
-
-  // 3) If everything ok, send token to client
-  createSendToken(user, 200, res);
-});
-
 exports.protect = catchAsync(async (req, res, next) => {
   // Getting token and check if its there
   let token;
@@ -77,6 +47,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -108,8 +80,63 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   req.user = currentUser;
-
+  res.locals.user = currentUser;
   next();
+});
+
+// Only for render pages, no errors!
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+  if (req.cookies.jwt) {
+    const decoded = jwt.verify(req.cookies.jwt, process.env.JWT_SECRET);
+
+    // 2) Check if user exists
+    const currentUser = await User.findById(decoded.id);
+
+    if (!currentUser) {
+      return next();
+    }
+
+    // 4) Check if user changed password after the token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next();
+    }
+
+    // THERE IS LOGGED IN USER
+    res.locals.user = currentUser;
+    return next();
+  }
+  next();
+});
+
+exports.signUp = catchAsync(async (req, res, next) => {
+  const { name, email, password, confirmPassword } = req.body;
+  const newUser = await User.create({
+    name,
+    email,
+    password,
+    confirmPassword
+  });
+
+  createSendToken(newUser, 201, res);
+});
+
+exports.login = catchAsync(async (req, res, next) => {
+  const { email, password } = req.body;
+
+  // 1) Check if email and password exist
+  if (!email || !password) {
+    return next(new AppError('Please provide email and password!', 400));
+  }
+
+  // 2) Check if use exists && password is correct
+  const user = await User.findOne({ email }).select('+password');
+
+  if (!user || !(await user.correctPassword(password))) {
+    return next(new AppError('Incorrect email or password', 400));
+  }
+
+  // 3) If everything ok, send token to client
+  createSendToken(user, 200, res);
 });
 
 exports.restrictTo = (...roles) => {
