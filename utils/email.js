@@ -44,8 +44,8 @@ module.exports = class Email {
       from: this.from,
       to: this.to,
       subject,
-      html,
-      text: htmlToText.fromString(html)
+      html
+      // text: htmlToText.fromString(html)
     };
 
     // 3) Create a transport and send email
