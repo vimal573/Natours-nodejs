@@ -1,7 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 const nodemailer = require('nodemailer');
 const pug = require('pug');
-const htmlToText = require('html-to-text');
+// const htmlToText = require('html-to-text');
 
 module.exports = class Email {
   constructor(user, url) {
@@ -14,7 +14,15 @@ module.exports = class Email {
   newTransport() {
     if (process.env.NODE_ENV === 'production') {
       // send grid
-      return 1;
+
+      return nodemailer.createTransport({
+        host: process.env.SENDINBLUE_HOST,
+        port: process.env.SENDINBLUE_PORT,
+        auth: {
+          user: process.env.SENDINBLUE_USERNAME,
+          pass: process.env.SENDINBLUE_PASSWORD
+        }
+      });
     }
 
     return nodemailer.createTransport({
@@ -54,5 +62,12 @@ module.exports = class Email {
 
   async sendWelcome() {
     await this.send('welcome', 'Welcome to the natours family!');
+  }
+
+  async sendPasswordReset() {
+    await this.send(
+      'passwordReset',
+      'Your password reset token is (valid for only 10 minutes)'
+    );
   }
 };

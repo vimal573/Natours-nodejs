@@ -132,7 +132,6 @@ exports.signUp = catchAsync(async (req, res, next) => {
   });
 
   const Url = `${req.protocol}://${req.get('host')}/me`;
-  console.log(Url);
 
   await new Email(newUser, Url).sendWelcome();
 
@@ -187,7 +186,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     'host'
   )}/api/v1/users/resetPassword/${resetToken}`;
 
-  const message = `Forgot yout password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}. \nIf you didn't forget your password, please ignore this email `;
+  // const message = `Forgot yout password? Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}. \nIf you didn't forget your password, please ignore this email `;
 
   try {
     // await Email({
@@ -195,6 +194,8 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     //   subject: 'Your password reset {valid for 10 min}',
     //   message
     // });
+
+    await new Email(user, resetURL).sendPasswordReset();
 
     res.status(200).json({
       status: 'success',
